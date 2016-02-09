@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.Menu;
@@ -20,13 +21,20 @@ import java.text.DecimalFormat;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    private SensorManager mSensorManager;
-    private TextView mScreenSizeTwxtView;
-    private int[] viewCoords = new int[2];
-    private FloatingActionButton fab;
     private boolean floatingOn = false;
+
     private int screenWidth;
     private int screenHeight;
+
+    private SensorManager mSensorManager;
+    private Sensor accelerometer;
+    private Sensor magnetometer;
+
+    int xCoord;
+    int yCoord;
+
+    private FloatingActionButton fab;
+    private TextView mViewcoords;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,15 +45,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         getScreenSize();
 
-        mScreenSizeTwxtView = (TextView) findViewById(R.id.screen_size);
-        mScreenSizeTwxtView.setText("screenWidth: " + screenWidth
-                + " screenHeight: " + screenHeight);
+        mViewcoords = (TextView) findViewById(R.id.view_coords);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(view.getContext(), "Please, don't touch me!", Toast.LENGTH_LONG).show();
+                Toast.makeText(view.getContext(), "Please, don't touch me!", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -62,7 +68,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        magnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
     }
 
     private void unregisterSensor() {
@@ -70,9 +78,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void registerSensor() {
-        mSensorManager.registerListener(this,
-                mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
-                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
@@ -91,23 +98,60 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return super.onOptionsItemSelected(item);
     }
 
+    float[] mGravity = null;
+    float[] mGeomagnetic = null;
+
     @Override
     public void onSensorChanged(SensorEvent event) {
+
         //if sensor is unreliable, return void
         if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) {
             Toast.makeText(this, "Sensor not available", Toast.LENGTH_LONG).show();
             return;
         }
 
-        fab.getLocationOnScreen(viewCoords);
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            mGravity = event.values;
+        }
 
-        // MAX VALUE: x  is 70,  y is 150
-        int xAbs = (int) Math.abs(event.values[2]);
-        int yAbs = (int) Math.abs(event.values[1]);
+        if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+            mGeomagnetic = event.values;
+        }
 
-        int xCoord = (xAbs * screenWidth) / 70;
-        int yCoord = (yAbs * screenHeight) / 150;
+        float orientation[] = new float[3];
 
+        if (mGravity != null && mGeomagnetic != null) {
+            float R[] = new float[9];
+            float I[] = new float[9];
+            boolean success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic);
+            if (success) {
+                SensorManager.getOrientation(R, orientation);
+            }
+        }
+
+        /*
+        aumenta z a destra,
+        diminuisce z a sx
+
+        diminuisce y sotto
+        aumenta y sopra
+        */
+
+        float z = orientation[2];
+        float y = orientation[1];
+        if (z <= 0) {
+            xCoord = (int) ((( screenWidth/2 ) / (-1.5) ) * z);
+        } else {
+            xCoord = (int) ((( screenWidth ) / (1.5) ) * z);
+        }
+
+        if (y <= 0) {
+            yCoord = (int) ((( screenHeight ) / (-1.5))  * y);
+        } else {
+            yCoord = (int) ((( screenHeight/2 ) / (1.5) ) * y);
+        }
+
+        mViewcoords.setText("x: " + xCoord + " y: " + yCoord);
         fab.animate().x(xCoord).y(yCoord);
     }
 
