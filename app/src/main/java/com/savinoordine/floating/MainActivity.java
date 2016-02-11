@@ -14,6 +14,7 @@ import android.view.Display;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +37,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloatingActionButton fab;
     private TextView mViewcoords;
 
+    View view;
+    private Button mButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +50,34 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         getScreenSize();
 
         mViewcoords = (TextView) findViewById(R.id.view_coords);
+        mViewcoords.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                view = v;
+                if (floatingOn) {
+                    unregisterSensor();
+                } else {
+                    registerSensor();
+                }
+                floatingOn = !floatingOn;
+                return true;
+            }
+        });
+
+        mButton = (Button) findViewById(R.id.button);
+        mButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                view = v;
+                if (floatingOn) {
+                    unregisterSensor();
+                } else {
+                    registerSensor();
+                }
+                floatingOn = !floatingOn;
+                return true;
+            }
+        });
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -58,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         fab.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                view = v;
                 if (floatingOn) {
                     unregisterSensor();
                 } else {
@@ -152,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         mViewcoords.setText("x: " + xCoord + " y: " + yCoord);
-        fab.animate().x(xCoord).y(yCoord);
+        view.animate().x(xCoord).y(yCoord);
     }
 
     @Override
