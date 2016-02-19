@@ -15,9 +15,6 @@ import android.widget.Toast;
 import com.savinoordine.letsfloating.LetsFloating;
 
 public class MainActivity extends AppCompatActivity {
-    private FloatingActionButton fab;
-    private TextView mViewcoords;
-    private Button mButton;
     private LetsFloating mLetsFloating = new LetsFloating();
 
     @Override
@@ -29,7 +26,9 @@ public class MainActivity extends AppCompatActivity {
 
         mLetsFloating.init(this);
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
+        Button button = (Button) findViewById(R.id.button);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -37,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mLetsFloating.setListener(fab);
+        mLetsFloating.setSensorCoords(fab);
+        mLetsFloating.setPercentageCoords(button);
     }
 
 

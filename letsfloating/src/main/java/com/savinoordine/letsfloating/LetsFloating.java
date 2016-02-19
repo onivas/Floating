@@ -1,13 +1,19 @@
 package com.savinoordine.letsfloating;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 public class LetsFloating implements SensorEventListener {
@@ -34,7 +40,7 @@ public class LetsFloating implements SensorEventListener {
         mScreenInfo = new ScreenInfo(mActivity);
     }
 
-    public void setListener(View view) {
+    public void setSensorCoords(View view) {
         mFloatingView = view;
         mFloatingView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -45,6 +51,39 @@ public class LetsFloating implements SensorEventListener {
                     registerSensor();
                 }
                 mIsFloating = !mIsFloating;
+                return true;
+            }
+        });
+    }
+
+    public void setPercentageCoords(View view) {
+        mFloatingView = view;
+        mFloatingView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+                LayoutInflater inflater = mActivity.getLayoutInflater();
+                View dialogView = inflater.inflate(R.layout.dialog_percentage, null);
+
+                final EditText xTextValue = (EditText) dialogView.findViewById(R.id.x_percentage);
+                final EditText yTextValue = (EditText) dialogView.findViewById(R.id.y_percentage);
+
+                builder.setView(dialogView)
+                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                int x = (mScreenInfo.getScreenWidth() * Integer.valueOf(xTextValue.getText().toString())) / 100;
+                                int y = (mScreenInfo.getScreenHeight() * Integer.valueOf(yTextValue.getText().toString())) / 100;
+
+                                animateView(x, y);
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.dismiss();
+                            }
+                        });
+                builder.create().show();
                 return true;
             }
         });
@@ -61,9 +100,6 @@ public class LetsFloating implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        int xCoord;
-        int yCoord;
-
         //if sensor is unreliable, return void
         if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) {
             Toast.makeText(mActivity, "Sensor not available", Toast.LENGTH_LONG).show();
@@ -78,9 +114,8 @@ public class LetsFloating implements SensorEventListener {
             mGeomagnetic = event.values;
         }
 
-        float orientation[] = new float[3];
-
         if (mCurrentTime + 500 < System.currentTimeMillis()) {
+            float orientation[] = new float[3];
             if (mGravity != null && mGeomagnetic != null) {
                 mCurrentTime = System.currentTimeMillis();
                 float R[] = new float[9];
@@ -91,10 +126,14 @@ public class LetsFloating implements SensorEventListener {
                 }
             }
 
-            yCoord = getYCoord(orientation[1]);
-            xCoord = getXCoord(orientation[2]);
-            mFloatingView.animate().x(xCoord).y(yCoord).setDuration(500);
+            int xCoord = getXCoord(orientation[2]);
+            int yCoord = getYCoord(orientation[1]);
+            animateView(xCoord, yCoord);
         }
+    }
+
+    private void animateView(int x,int y) {
+        mFloatingView.animate().x(x).y(y).setDuration(500);
     }
 
     private int getXCoord(float param) {
@@ -123,6 +162,5 @@ public class LetsFloating implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 }
