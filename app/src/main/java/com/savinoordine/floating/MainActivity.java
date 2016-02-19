@@ -29,9 +29,6 @@ public class MainActivity extends AppCompatActivity {
 
         mLetsFloating.init(this);
 
-        mViewcoords = (TextView) findViewById(R.id.view_coords);
-        mButton = (Button) findViewById(R.id.button);
-
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -40,8 +37,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mLetsFloating.setListener(mViewcoords);
-        mLetsFloating.setListener(mButton);
         mLetsFloating.setListener(fab);
     }
 

@@ -24,9 +24,11 @@ public class LetsFloating implements SensorEventListener {
     private Sensor accelerometer;
     private Sensor magnetometer;
 
+    private long mCurrentTime = System.currentTimeMillis();
+
     public void init(Activity activity) {
         mActivity = activity;
-        mSensorManager = (SensorManager)mActivity.getSystemService(Context.SENSOR_SERVICE);
+        mSensorManager = (SensorManager) mActivity.getSystemService(Context.SENSOR_SERVICE);
         accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         magnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mScreenInfo = new ScreenInfo(mActivity);
@@ -53,8 +55,8 @@ public class LetsFloating implements SensorEventListener {
     }
 
     private void registerSensor() {
-        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        mSensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
+        mSensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_UI);
     }
 
     @Override
@@ -78,44 +80,45 @@ public class LetsFloating implements SensorEventListener {
 
         float orientation[] = new float[3];
 
-        if (mGravity != null && mGeomagnetic != null) {
-            float R[] = new float[9];
-            float I[] = new float[9];
-            boolean success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic);
-            if (success) {
-                SensorManager.getOrientation(R, orientation);
+        if (mCurrentTime + 500 < System.currentTimeMillis()) {
+            if (mGravity != null && mGeomagnetic != null) {
+                mCurrentTime = System.currentTimeMillis();
+                float R[] = new float[9];
+                float I[] = new float[9];
+                boolean success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic);
+                if (success) {
+                    SensorManager.getOrientation(R, orientation);
+                }
             }
+
+            yCoord = getYCoord(orientation[1]);
+            xCoord = getXCoord(orientation[2]);
+            mFloatingView.animate().x(xCoord).y(yCoord).setDuration(500);
         }
+    }
 
-        /*
-        aumenta z a destra,
-        diminuisce z a sx
-
-        diminuisce y sotto
-        aumenta y sopra
-        */
-
-
-        float y = orientation[2];
-        float z = orientation[1];
-        String s = "z: " + z + " - y: " + y;
-        Log.d(">>>>>" ,s);
-        if (z <= 0) {
-            xCoord = (int) (( mScreenInfo.getScreenWidth() * z) / (-1.5));
+    private int getXCoord(float param) {
+        int xCoord;
+        if (param >= 0 && param < 1) {
+            xCoord = (int) (mScreenInfo.getScreenWidth() * (param));
+        } else if (param < 0) {
+            xCoord = 0;
         } else {
-            xCoord = (int) ((( mScreenInfo.getScreenWidth() ) / (1.5) ) * z);
+            xCoord = mScreenInfo.getScreenWidth();
         }
+        return xCoord;
+    }
 
-        if (y <= 0) {
-            yCoord = (int) ((( mScreenInfo.getScreenHeight() ) / (-1.5))  * y);
+    private int getYCoord(float param) {
+        int yCoord;
+        if (param < -1) {
+            yCoord = (int) mScreenInfo.getScreenHeight();
+        } else if (param < 0) {
+            yCoord = (int) (mScreenInfo.getScreenHeight() * (-param));
         } else {
-            yCoord = (int) ((( mScreenInfo.getScreenHeight() ) / (1.5) ) * y);
+            yCoord = 0;
         }
-
-        s = "H:" + mScreenInfo.getScreenHeight()+ " W:" + mScreenInfo.getScreenWidth() +
-                "xCoord: " + xCoord + " - yCoord: " + yCoord;
-        Log.d(">>>>>" ,s);
-        mFloatingView.animate().x(xCoord).y(yCoord);
+        return yCoord;
     }
 
     @Override
