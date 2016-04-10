@@ -1,6 +1,9 @@
 package com.savinoordine.floating;
 
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -36,8 +39,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mLetsFloating.setSensorCoords(fab);
-        mLetsFloating.setPercentageCoords(button);
+        boolean isOriginalFabCoords = mLetsFloating.setSensorCoords(fab);
+        if (!isOriginalFabCoords) {
+            mLetsFloating.restoreLastCoords(fab);
+        }
+
+        boolean isOriginalButtonCoords = mLetsFloating.setPercentageCoords(button);
+        if (!isOriginalButtonCoords) {
+            mLetsFloating.restoreLastCoords(button);
+        }
     }
 
 
@@ -52,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+            preferences.edit().clear().apply();
             return true;
         }
         return super.onOptionsItemSelected(item);
