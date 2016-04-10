@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Floating</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_reset">Reset</string>
 </resources>
