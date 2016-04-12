@@ -31,9 +31,8 @@ public class LetsFloating implements SensorEventListener {
 
     private long mCurrentTime = System.currentTimeMillis();
 
-    private static final String VIEW_ID = "com.savinoordine.letsfloating.view.id";
-    private static final String VIEW_X_COORD = "com.savinoordine.letsfloating.view.x";
-    private static final String VIEW_Y_COORD = "com.savinoordine.letsfloating.view.y";
+    private static final String VIEW_X_COORD = "x";
+    private static final String VIEW_Y_COORD = "y";
 
     public void init(Activity activity) {
         mActivity = activity;
@@ -60,37 +59,6 @@ public class LetsFloating implements SensorEventListener {
         });
 
         return isOriginalPosition(view);
-    }
-
-    private void saveNewPosition(View view, float xCoord, float yCoord) {
-        SharedPreferences sharedPref = mActivity.getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-
-        int orientationValue = view.getContext().getResources().getConfiguration().orientation;
-
-        String id = view.getResources().getResourceName(view.getId())
-                .concat(String.valueOf(orientationValue));
-        String x = id.concat("x");
-        String y = id.concat("y");
-
-        editor.putString(id, id);
-        editor.putFloat(x, xCoord);
-        editor.putFloat(y, yCoord);
-        editor.apply();
-    }
-
-    private boolean isOriginalPosition(View view) {
-        int orientationValue = view.getContext().getResources().getConfiguration().orientation;
-
-        String id = view.getResources().getResourceName(view.getId())
-                .concat(String.valueOf(orientationValue));
-        SharedPreferences sharedPref = mActivity.getPreferences(Context.MODE_PRIVATE);
-        String originalPosition = sharedPref.getString(id, null);
-
-        if (originalPosition == null) {
-            return true;
-        }
-        return false;
     }
 
     public void unregisterSensor() {
@@ -134,6 +102,10 @@ public class LetsFloating implements SensorEventListener {
 
             mSensorFloatingView.animate().x(xCoord).y(yCoord).setDuration(500);
         }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
     private int getXCoord(float param) {
@@ -184,7 +156,7 @@ public class LetsFloating implements SensorEventListener {
                                 String xVal = xTextValue.getText().toString();
                                 if (!xVal.isEmpty()) {
                                     Integer xInteger = Integer.valueOf(xVal);
-                                    if (xInteger >= 0 && xInteger <=100) {
+                                    if (xInteger >= 0 && xInteger <= 100) {
                                         x = (mScreenInfo.getScreenWidth() * xInteger) / 100;
                                         xMove = true;
                                     }
@@ -193,7 +165,7 @@ public class LetsFloating implements SensorEventListener {
                                 String yVal = yTextValue.getText().toString();
                                 if (!yVal.isEmpty()) {
                                     Integer yInteger = Integer.valueOf(yVal);
-                                    if (yInteger >= 0 && yInteger <=100) {
+                                    if (yInteger >= 0 && yInteger <= 100) {
                                         y = (mScreenInfo.getScreenHeight() * yInteger) / 100;
                                         yMove = true;
                                     }
@@ -218,24 +190,72 @@ public class LetsFloating implements SensorEventListener {
     }
 
     private void percentageViewAnimation(boolean xMove, boolean yMove, int x, int y) {
+        int xOffset = 0;
+        int yOffset = 0;
+
+        int viewWidth = mPercentageFloatingView.getWidth();
+        int viewHeight = mPercentageFloatingView.getHeight();
+
+        if (viewWidth + x > mScreenInfo.getScreenWidth()) {
+            xOffset = viewWidth;
+        }
+
+        if (viewHeight > y ) {
+            yOffset = -viewWidth;
+        }
+
+        if (viewHeight + y > mScreenInfo.getScreenHeight()) {
+            yOffset = viewWidth;
+        }
+
+        x = x - xOffset;
+        y = y - yOffset;
+
         if (xMove && yMove) {
             mPercentageFloatingView.animate().x(x).y(y);
             return;
         }
 
-        if(xMove) {
+        if (xMove) {
             mPercentageFloatingView.animate().x(x);
             return;
         }
 
-        if(yMove) {
+        if (yMove) {
             mPercentageFloatingView.animate().y(y);
             return;
         }
     }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    private void saveNewPosition(View view, float xCoord, float yCoord) {
+        SharedPreferences sharedPref = mActivity.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+
+        int orientationValue = view.getContext().getResources().getConfiguration().orientation;
+
+        String id = view.getResources().getResourceName(view.getId())
+                .concat(String.valueOf(orientationValue));
+        String x = id.concat(VIEW_X_COORD);
+        String y = id.concat(VIEW_Y_COORD);
+
+        editor.putString(id, id);
+        editor.putFloat(x, xCoord);
+        editor.putFloat(y, yCoord);
+        editor.apply();
+    }
+
+    private boolean isOriginalPosition(View view) {
+        int orientationValue = view.getContext().getResources().getConfiguration().orientation;
+
+        String id = view.getResources().getResourceName(view.getId())
+                .concat(String.valueOf(orientationValue));
+        SharedPreferences sharedPref = mActivity.getPreferences(Context.MODE_PRIVATE);
+        String originalPosition = sharedPref.getString(id, null);
+
+        if (originalPosition == null) {
+            return true;
+        }
+        return false;
     }
 
     public void restoreLastCoords(View view) {
@@ -248,8 +268,8 @@ public class LetsFloating implements SensorEventListener {
 
         if (orientationValue != -1) {
 
-            String x = id.concat("x");
-            String y = id.concat("y");
+            String x = id.concat(VIEW_X_COORD);
+            String y = id.concat(VIEW_Y_COORD);
 
             float xCoord = sharedPref.getFloat(x, -1);
             float yCoord = sharedPref.getFloat(y, -1);
