@@ -239,8 +239,8 @@ public class LetsFloating implements SensorEventListener {
         String y = id.concat(VIEW_Y_COORD);
 
         editor.putString(id, id);
-        editor.putFloat(x, xCoord);
-        editor.putFloat(y, yCoord);
+        editor.putFloat(x, xCoord!= 0 ? xCoord: view.getX());
+        editor.putFloat(y, yCoord!= 0 ? yCoord: view.getY());
         editor.apply();
     }
 
