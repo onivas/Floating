@@ -231,10 +231,7 @@ public class LetsFloating implements SensorEventListener {
         SharedPreferences sharedPref = mActivity.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 
-        int orientationValue = view.getContext().getResources().getConfiguration().orientation;
-
-        String id = view.getResources().getResourceName(view.getId())
-                .concat(String.valueOf(orientationValue));
+        String id = getIdKey(view, getOrientation(view));
         String x = id.concat(VIEW_X_COORD);
         String y = id.concat(VIEW_Y_COORD);
 
@@ -245,10 +242,8 @@ public class LetsFloating implements SensorEventListener {
     }
 
     private boolean isOriginalPosition(View view) {
-        int orientationValue = view.getContext().getResources().getConfiguration().orientation;
+        String id = getIdKey(view, getOrientation(view));
 
-        String id = view.getResources().getResourceName(view.getId())
-                .concat(String.valueOf(orientationValue));
         SharedPreferences sharedPref = mActivity.getPreferences(Context.MODE_PRIVATE);
         String originalPosition = sharedPref.getString(id, null);
 
@@ -261,10 +256,8 @@ public class LetsFloating implements SensorEventListener {
     public void restoreLastCoords(View view) {
         SharedPreferences sharedPref = mActivity.getPreferences(Context.MODE_PRIVATE);
 
-        int orientationValue = view.getContext().getResources().getConfiguration().orientation;
-
-        String id = view.getResources().getResourceName(view.getId())
-                .concat(String.valueOf(orientationValue));
+        int orientationValue = getOrientation(view);
+        String id = getIdKey(view, orientationValue);
 
         if (orientationValue != -1) {
 
@@ -280,5 +273,16 @@ public class LetsFloating implements SensorEventListener {
                 }
             }
         }
+    }
+
+    private int getOrientation(View view) {
+        return view.getContext().getResources().getConfiguration().orientation;
+    }
+
+    private String getIdKey(View view, int orientation) {
+        String id = view.getResources().getResourceName(view.getId())
+                .concat(String.valueOf(orientation));
+
+        return id;
     }
 }
