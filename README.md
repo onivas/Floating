@@ -39,3 +39,6 @@ protected void onPause() {
    super.onPause();
 }
 </pre>
+
+#Note
+You can let's float two views per Activity, one using percentage dialog and the other with the gravity sensor
