@@ -12,7 +12,7 @@ import io.github.onivas.floating.Floating;
 In activity onCreate:
 <pre>
 // inizialize
-mFloating.init(this);
+*mFloating.init(this);*
 
 // Move button on screen by using screen percentage dialog
 Button button = (Button) findViewById(R.id.button);
