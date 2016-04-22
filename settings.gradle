@@ -1,1 +1,1 @@
-include ':app', ':letsfloating'
+include ':app', ':floating'

@@ -12,10 +12,10 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.savinoordine.letsfloating.LetsFloating;
+import com.savinoordine.letsfloating.Floating;
 
 public class MainActivity extends AppCompatActivity {
-    private LetsFloating mLetsFloating = new LetsFloating();
+    private Floating mFloating = new Floating();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mLetsFloating.init(this);
+        mFloating.init(this);
 
         Button button = (Button) findViewById(R.id.button);
 
@@ -36,14 +36,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        boolean isOriginalFabCoords = mLetsFloating.setSensorCoords(fab);
+        boolean isOriginalFabCoords = mFloating.setSensorCoords(fab);
         if (!isOriginalFabCoords) {
-            mLetsFloating.restoreLastCoords(fab);
+            mFloating.restoreLastCoords(fab);
         }
 
-        boolean isOriginalButtonCoords = mLetsFloating.setPercentageCoords(button);
+        boolean isOriginalButtonCoords = mFloating.setPercentageCoords(button);
         if (!isOriginalButtonCoords) {
-            mLetsFloating.restoreLastCoords(button);
+            mFloating.restoreLastCoords(button);
         }
     }
 
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        mLetsFloating.unregisterSensor();
+        mFloating.unregisterSensor();
         super.onPause();
     }
 }

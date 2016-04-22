@@ -14,7 +14,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class LetsFloating implements SensorEventListener {
+public class Floating implements SensorEventListener {
 
     private boolean mIsFloating = false;
     private Activity mActivity;
